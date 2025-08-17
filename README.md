@@ -85,3 +85,16 @@ pip install -r requirements.txt
 If you want, I can now **update your full README** with this style included so it’s ready to paste directly into GitHub. Do you want me to do that?
 
 ```
+## ⚙️ Usage
+1. Train The Model
+```bash
+python train_all_models.py
+```
+This processes the raw data, trains both the regression and classification models, and saves them as .pkl files in app/.
+2. Run the Backend Server
+```bash
+python backend.py
+```
+3. Access the Application
+- Open your browser and navigate to: http://127.0.0.1:8080
+- Input home features and get real-time predictions for price and architectural style.
