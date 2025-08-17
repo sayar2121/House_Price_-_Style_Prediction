@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeValue AI</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- General Styling & Layout --- */
+        :root {
+            --primary-color: #4A90E2; /* A modern, softer blue */
+            --secondary-color: #50E3C2; /* A vibrant teal/mint */
+            --text-color: #333;
+            --light-gray: #F4F7F6;
+            --card-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* --- Header with Image --- */
+        .header {
+            position: relative;
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        .header-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        .header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 3em;
+            margin: 0;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 1.2em;
+            margin-top: 0.5rem;
+        }
+
+        /* --- Main Content Grid --- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 992px) {
+            .main-grid {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        /* --- Input Controls Card --- */
+        .controls-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+        .controls-card h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            font-size: 1.5em;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            display: flex; /* Use flexbox to align text and output */
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        /* Style for the output value next to the label */
+        label output {
+            background-color: #e9f7fe;
+            color: var(--primary-color);
+            padding: 2px 10px;
+            border-radius: 5px;
+            font-weight: 700;
+        }
+        input[type="number"], input[type="range"] {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid #CCC;
+            box-sizing: border-box;
+        }
+        .predict-button {
+            width: 100%;
+            padding: 1rem;
+            background-image: linear-gradient(45deg, var(--primary-color), #357ABD);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        .predict-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        /* --- Results Area --- */
+        .results-area {
+            background: #fff;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+        .info-box {
+            background-color: #e9f7fe;
+            border-left: 5px solid var(--primary-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .results-container {
+            display: none; /* Hidden by default */
+        }
+        .metrics-wrapper {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        @media (min-width: 768px) {
+            .metrics-wrapper {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .metric-card {
+            padding: 20px;
+            text-align: center;
+            border-radius: var(--border-radius);
+            color: white;
+        }
+        .metric-card.price {
+            background-image: linear-gradient(45deg, var(--primary-color), #357ABD);
+        }
+        .metric-card.style {
+            background-image: linear-gradient(45deg, var(--secondary-color), #30c9a6);
+        }
+        .metric-title {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .chart-container {
+            margin-top: 2rem;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            text-align: center;
+            color: grey;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #E0E0E0;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 576px) {
+            .container {
+                padding: 1rem;
+            }
+            .header h1 {
+                font-size: 2.2em;
+            }
+            .header p {
+                font-size: 1em;
+            }
+            .controls-card, .results-area {
+                padding: 1.5rem;
+            }
+            .metric-value {
+                font-size: 2em;
+            }
+            .header-image {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=2070&auto=format&fit=crop" alt="Modern house" class="header-image">
+            <div class="header-overlay">
+                <h1>🤖 HomeValue AI</h1>
+                <p>Instant, AI-Powered Home Valuations</p>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Controls Section -->
+            <aside class="controls-card">
+                <h2>House Features</h2>
+                <div class="input-group">
+                    <label for="lot_area">Lot Area (sq ft)</label>
+                    <input type="number" id="lot_area" value="8450">
+                </div>
+                <div class="input-group">
+                    <!-- UPDATED: Added output tag for the slider value -->
+                    <label for="overall_qual">Overall Quality <output id="overall_qual_output">7</output></label>
+                    <input type="range" id="overall_qual" min="1" max="10" value="7" oninput="overall_qual_output.value = this.value">
+                </div>
+                <div class="input-group">
+                    <label for="year_built">Year Built</label>
+                    <input type="number" id="year_built" value="2003">
+                </div>
+                <div class="input-group">
+                    <label for="gr_liv_area">Living Area (sq ft)</label>
+                    <input type="number" id="gr_liv_area" value="1710">
+                </div>
+                <div class="input-group">
+                    <!-- UPDATED: Added output tag for the slider value -->
+                    <label for="full_bath">Full Bathrooms <output id="full_bath_output">2</output></label>
+                    <input type="range" id="full_bath" min="0" max="4" value="2" oninput="full_bath_output.value = this.value">
+                </div>
+                <div class="input-group">
+                    <!-- UPDATED: Added output tag for the slider value -->
+                    <label for="bedroom_abvgr">Bedrooms <output id="bedroom_abvgr_output">3</output></label>
+                    <input type="range" id="bedroom_abvgr" min="0" max="8" value="3" oninput="bedroom_abvgr_output.value = this.value">
+                </div>
+                <div class="input-group">
+                    <!-- UPDATED: Added output tag for the slider value -->
+                    <label for="garage_cars">Garage Capacity <output id="garage_cars_output">2</output></label>
+                    <input type="range" id="garage_cars" min="0" max="4" value="2" oninput="garage_cars_output.value = this.value">
+                </div>
+                <button id="predict-button" class="predict-button">🔮 Predict House Value</button>
+            </aside>
+
+            <!-- Results Section -->
+            <main class="results-area">
+                <div id="info-box" class="info-box">
+                    <p>👈 Adjust the features and click the <strong>Predict</strong> button to see the results.</p>
+                </div>
+                
+                <div id="results-container" class="results-container">
+                    <h3>Prediction Results</h3>
+                    <div class="metrics-wrapper">
+                        <div class="metric-card price">
+                            <div class="metric-title">Estimated Price</div>
+                            <div id="price-prediction" class="metric-value">$0.00</div>
+                        </div>
+                        <div class="metric-card style">
+                            <div class="metric-title">Predicted House Style</div>
+                            <div id="style-prediction" class="metric-value">N/A</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>What Influenced the Price?</h3>
+                        <canvas id="importanceChart"></canvas>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <p>Powered by 🤖 HomeValue AI</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const predictButton = document.getElementById('predict-button');
+        const infoBox = document.getElementById('info-box');
+        const resultsContainer = document.getElementById('results-container');
+        const pricePredictionEl = document.getElementById('price-prediction');
+        const stylePredictionEl = document.getElementById('style-prediction');
+        const chartCanvas = document.getElementById('importanceChart');
+        let importanceChart; // To hold the chart instance
+
+        // --- Event Listener ---
+        predictButton.addEventListener('click', () => {
+            const inputData = {
+                lot_area: parseFloat(document.getElementById('lot_area').value),
+                overall_qual: parseInt(document.getElementById('overall_qual').value),
+                year_built: parseInt(document.getElementById('year_built').value),
+                gr_liv_area: parseFloat(document.getElementById('gr_liv_area').value),
+                full_bath: parseInt(document.getElementById('full_bath').value),
+                bedroom_abvgr: parseInt(document.getElementById('bedroom_abvgr').value),
+                garage_cars: parseInt(document.getElementById('garage_cars').value),
+            };
+            infoBox.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            getRealPrediction(inputData);
+        });
+
+        // --- API Call Function ---
+        async function getRealPrediction(data) {
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                updateUI(result.price, result.style, result.importances);
+            } catch (error) {
+                console.error("Error fetching prediction:", error);
+                alert("Could not connect to the prediction server. Please ensure the backend is running.");
+            }
+        }
+
+        // --- UI Update Function ---
+        function updateUI(price, style, importances) {
+            pricePredictionEl.textContent = `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            stylePredictionEl.textContent = style;
+            
+            importances.sort((a, b) => a.value - b.value);
+
+            const chartData = {
+                labels: importances.map(item => item.feature),
+                datasets: [{
+                    label: 'Relative Importance',
+                    data: importances.map(item => item.value),
+                    backgroundColor: ['#FFB1C1', '#FFCF96', '#F6FDC3', '#CBFFA9', '#96EFFF', '#71A6D2', '#4A90E2'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            };
+
+            if (importanceChart) {
+                importanceChart.destroy();
+            }
+
+            importanceChart = new Chart(chartCanvas, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Relative Importance' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
